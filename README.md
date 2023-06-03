@@ -1,2 +1,2 @@
 # brundisium-articles-backend
-Novorum articulorum posteriora pro Brundisio
+Novorum articulorum backend pro Brundisio
