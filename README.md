@@ -1,2 +1,2 @@
 # brundisium-articles-backend
-News articles backends for Brundisium
+Novorum articulorum posteriora pro Brundisio
