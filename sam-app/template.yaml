@@ -18,7 +18,10 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: forum_universale
         - S3WritePolicy:
-            BucketName: forum-universale-bucket
+            BucketName: forum_universale-bucket
+        - SQSPollerPolicy:
+            QueueName: forum_loading # replace this with your actual queue name
+        - CloudWatchPutMetricPolicy: {} # no placeholder values required
       Events:
         CreatePost:
           Type: Api
