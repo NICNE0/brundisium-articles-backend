@@ -1,33 +1,45 @@
-// const axios = require('axios')
-// const url = 'http://checkip.amazonaws.com/';
-let response;
+const AWS = require('aws-sdk');
+const uuid = require('uuid');
+const S3 = new AWS.S3();
+const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-/**
- *
- * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
- * @param {Object} event - API Gateway Lambda Proxy Input Format
- *
- * Context doc: https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html 
- * @param {Object} context
- *
- * Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
- * @returns {Object} object - API Gateway Lambda Proxy Output Format
- * 
- */
+const BUCKET_NAME = 'news-articles-images';
+const TABLE_NAME = 'NewsArticles';
+
 exports.lambdaHandler = async (event, context) => {
-    try {
-        // const ret = await axios(url);
-        response = {
-            'statusCode': 200,
-            'body': JSON.stringify({
-                message: 'hello world',
-                // location: ret.data.trim()
-            })
-        }
-    } catch (err) {
-        console.log(err);
-        return err;
-    }
+    let response;
+    const requestBody = JSON.parse(event.body);
+    
+    // Generate a unique ID for the post
+    const id = uuid.v4();
 
-    return response
+    // Save the post to DynamoDB
+    const putParams = {
+        TableName: TABLE_NAME,
+        Item: {
+            id: id,
+            title: requestBody.title,
+            content: requestBody.content,
+            date: new Date().toISOString(),
+        }
+    };
+    await dynamodb.put(putParams).promise();
+
+    // Upload the image to S3
+    const imageBuffer = Buffer.from(requestBody.image, 'base64');
+    const uploadParams = {
+        Bucket: BUCKET_NAME,
+        Key: `${id}.jpg`,
+        Body: imageBuffer,
+        ContentType: 'image/jpeg',
+    };
+    await S3.upload(uploadParams).promise();
+
+    response = {
+        'statusCode': 200,
+        'body': JSON.stringify({
+            message: 'Post created successfully',
+        })
+    };
+    return response;
 };
