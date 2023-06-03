@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  brundisium-articles-backend
+
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  CreatePostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: hello-world/
+      Handler: app.lambdaHandler
+      Runtime: nodejs14.x
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: forum_universale
+        - S3WritePolicy:
+            BucketName: forum-universale-bucket
+      Events:
+        CreatePost:
+          Type: Api
+          Properties:
+            Path: /posts
+            Method: post
+
+Outputs:
+  CreatePostApi:
+    Description: "API Gateway endpoint URL for Prod environment for Create Post function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/posts/"
